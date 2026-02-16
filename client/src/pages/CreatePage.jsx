@@ -8,6 +8,7 @@ import {
   Button,
 } from "@mui/material";
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 function CreatePage() {
   const [title, setTitle] = useState("");
@@ -16,6 +17,55 @@ function CreatePage() {
   const [bodyError, setBodyError] = useState(false);
   const [titleHelper, setTitleHelper] = useState("");
   const [bodyHelper, setBodyHelper] = useState("");
+  const navigate = useNavigate();
+
+  const handlePost = async () => {
+    if (title.trim().length === 0 || body.trim().length === 0) {
+      if (title.trim().length === 0) {
+        setTitleError(true);
+        setTitleHelper("Title cannot be empty");
+      } else {
+        setTitleError(false);
+        setTitleHelper();
+      }
+
+      if (body.trim().length === 0) {
+        setBodyError(true);
+        setBodyHelper("Body cannot be empty");
+      } else {
+        setBodyError(false);
+        setBodyHelper("");
+      }
+
+      return;
+    }
+
+    try {
+      const token = localStorage.getItem("token");
+
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/post`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `${token}`,
+        },
+        body: JSON.stringify({
+          title: title,
+          body: body,
+        }),
+      });
+
+      const data = await res.json();
+
+      // Clear inputs
+      setTitle("");
+      setBody("");
+
+      navigate("/");
+    } catch (err) {
+      console.error("Error creating post:", err);
+    }
+  };
 
   return (
     <Card sx={{ width: "40vw" }}>
@@ -86,7 +136,10 @@ function CreatePage() {
             }}
           />
         </Stack>
-        <Button sx={{ display: "block", ml: 0, mt: 2, bgcolor: "#3491ff" }}>
+        <Button
+          onClick={handlePost}
+          sx={{ display: "block", ml: 0, mt: 2, bgcolor: "#3491ff" }}
+        >
           Post
         </Button>
       </CardContent>
