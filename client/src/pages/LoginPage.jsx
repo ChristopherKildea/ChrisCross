@@ -1,43 +1,48 @@
-
-import { Link, Card, Typography, CardContent, InputAdornment, TextField, Stack, Button, Box } from "@mui/material";
+import {
+  Link,
+  Card,
+  Typography,
+  CardContent,
+  InputAdornment,
+  TextField,
+  Stack,
+  Button,
+  Box,
+} from "@mui/material";
 import { useState } from "react";
 import PersonIcon from "@mui/icons-material/Person";
 import LockIcon from "@mui/icons-material/Lock";
 
-
-
 function LoginPage() {
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
 
+  // TODO: Put this in a try-catch
+  const handleLogin = async () => {
+    const res = await fetch(`${import.meta.env.VITE_API_URL}/auth/login`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ username, password }),
+    });
 
-    const [username, setUsername] = useState("");
-    const [password, setPassword] = useState("");
+    const data = await res.json();
 
-    // TODO: Put this in a try-catch
-    const handleLogin = async () => { 
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/auth/login`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username, password })
-      });
+    if (data.token) {
+      localStorage.setItem("token", data.token);
+      window.location.href = "/";
+    } else {
+      alert("Invalid login");
+    }
+  };
 
-      const data = await res.json();
-
-      if (data.token) {
-        localStorage.setItem("token", data.token);
-        window.location.href = "/";
-      } else {
-        alert("Invalid login");
-      }
-    };
-
-    return (
+  return (
     <Box
       sx={{
         display: "flex",
-        justifyContent: "center", 
-        alignItems: "center",     
-        minHeight: "100vh",       
-        p: 2,                     
+        justifyContent: "center",
+        alignItems: "center",
+        minHeight: "100vh",
+        p: 2,
       }}
     >
       <Card
@@ -45,12 +50,10 @@ function LoginPage() {
           width: 350,
           borderRadius: 3,
           p: 2,
-          bgcolor: "white"
+          bgcolor: "white",
         }}
       >
-        <CardContent
-        component="form">
-          
+        <CardContent component="form">
           <Typography
             variant="h5"
             align="center"
@@ -73,7 +76,7 @@ function LoginPage() {
                 <InputAdornment position="start">
                   <PersonIcon />
                 </InputAdornment>
-              )
+              ),
             }}
           />
 
@@ -92,7 +95,7 @@ function LoginPage() {
                 <InputAdornment position="start">
                   <LockIcon />
                 </InputAdornment>
-              )
+              ),
             }}
           />
 
@@ -104,7 +107,7 @@ function LoginPage() {
               bgcolor: "black",
               "&:hover": { bgcolor: "#222" },
               mb: 2,
-              color: "white"
+              color: "white",
             }}
             onClick={handleLogin}
           >
@@ -120,9 +123,7 @@ function LoginPage() {
         </CardContent>
       </Card>
     </Box>
-    )
-
+  );
 }
 
-
-export default LoginPage
+export default LoginPage;

@@ -1,45 +1,47 @@
-
-import { Link, Card, Typography, CardContent, InputAdornment, TextField, Button, Box } from "@mui/material";
+import {
+  Link,
+  Card,
+  Typography,
+  CardContent,
+  InputAdornment,
+  TextField,
+  Button,
+  Box,
+} from "@mui/material";
 import { useState } from "react";
 import PersonIcon from "@mui/icons-material/Person";
 import LockIcon from "@mui/icons-material/Lock";
 
-
-
 function RegisterPage() {
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
 
+  // TODO - put this in a try-catch
+  const handleRegister = async () => {
+    const res = await fetch(`${import.meta.env.VITE_API_URL}/auth/register`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ username, password }),
+    });
 
-    const [username, setUsername] = useState("");
-    const [password, setPassword] = useState("");
+    const data = await res.json();
 
-    // TODO - put this in a try-catch
-    const handleRegister = async () => { 
+    if (data.token) {
+      localStorage.setItem("token", data.token);
+      window.location.href = "/";
+    } else {
+      alert("Invalid name");
+    }
+  };
 
-
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/auth/register`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username, password })
-      });
-
-      const data = await res.json();
-
-      if (data.token) {
-        localStorage.setItem("token", data.token);
-        window.location.href = "/";
-      } else {
-        alert("Invalid name");
-      }
-    };
-
-    return (
+  return (
     <Box
       sx={{
         display: "flex",
-        justifyContent: "center", 
-        alignItems: "center",     
-        minHeight: "100vh",       
-        p: 2,                     
+        justifyContent: "center",
+        alignItems: "center",
+        minHeight: "100vh",
+        p: 2,
       }}
     >
       <Card
@@ -47,11 +49,10 @@ function RegisterPage() {
           width: 350,
           borderRadius: 3,
           p: 2,
-          bgcolor: "white"
+          bgcolor: "white",
         }}
       >
-        <CardContent
-        component="form">
+        <CardContent component="form">
           <Typography
             variant="h5"
             align="center"
@@ -74,7 +75,7 @@ function RegisterPage() {
                 <InputAdornment position="start">
                   <PersonIcon />
                 </InputAdornment>
-              )
+              ),
             }}
           />
 
@@ -93,7 +94,7 @@ function RegisterPage() {
                 <InputAdornment position="start">
                   <LockIcon />
                 </InputAdornment>
-              )
+              ),
             }}
           />
 
@@ -105,7 +106,7 @@ function RegisterPage() {
               bgcolor: "black",
               "&:hover": { bgcolor: "#222" },
               mb: 2,
-              color: "white"
+              color: "white",
             }}
             onClick={handleRegister}
           >
@@ -121,9 +122,7 @@ function RegisterPage() {
         </CardContent>
       </Card>
     </Box>
-    )
-
+  );
 }
 
-
-export default RegisterPage
+export default RegisterPage;
