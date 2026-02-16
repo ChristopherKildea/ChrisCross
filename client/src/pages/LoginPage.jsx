@@ -12,9 +12,23 @@ function LoginPage() {
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
 
-    const handleLogin = async () => {
-      console.log("Login!")
-    }
+    // TODO: Put this in a try-catch
+    const handleLogin = async () => { 
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/auth/login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username, password })
+      });
+
+      const data = await res.json();
+
+      if (data.token) {
+        localStorage.setItem("token", data.token);
+        window.location.href = "/";
+      } else {
+        alert("Invalid login");
+      }
+    };
 
     return (
     <Box

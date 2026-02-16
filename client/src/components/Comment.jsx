@@ -2,13 +2,36 @@
 import { Card, Typography, CardContent, CardActionArea, Stack, Button } from "@mui/material";
 import FavoriteBorderOutlinedIcon from '@mui/icons-material/FavoriteBorderOutlined';
 import AddCommentOutlinedIcon from '@mui/icons-material/AddCommentOutlined';
+import { useState, useEffect } from "react";
+import { formatDistanceToNow } from "date-fns";
 
 
 
+function Comment({ user_id, content, timestamp }) {
 
-function Comment() {
-
-
+    const [username, setUsername] = useState([]);
+    
+        useEffect(() => {
+        const getUser = async () => {
+            try {
+    
+            const token = localStorage.getItem("token");
+            const res = await fetch(`${import.meta.env.VITE_API_URL}/user/${user_id}`, {
+                headers: {
+                Authorization: `${token}`,
+                },
+            });
+    
+            const data = await res.json();
+    
+            setUsername(data.username);
+            } catch (err) {
+            console.error("Failed to fetch posts:", err);
+            }
+        };
+    
+        getUser();
+        }, [user_id]);
 
     return ( 
         <Card sx={{borderRadius: 3}}>
@@ -16,13 +39,13 @@ function Comment() {
             <CardContent variant="subtitle2"> 
                 <Stack direction="row" spacing={1} alignItems="center">
                     <Typography variant="subtitle2" color="gray">
-                    Chris • 02/13/2026
+                    {username} • {formatDistanceToNow(new Date(timestamp), { addSuffix: true })}
                     </Typography>
                 </Stack>
                 <Typography variant="body2" align='left' mb={1} sx={{
        
                 }}>
-                Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aliquam eget purus mauris. Vestibulum molestie bibendum nisi consectetur auctor. Aliquam volutpat felis elementum dui euismod suscipit. Ut iaculis neque quis dui volutpat, ut ornare diam pulvinar. Pellentesque accumsan ipsum sed orci rhoncus, tempor aliquam elit maximus. Cras lorem ex, luctus vitae quam a, tempor congue urna. Praesent aliquet mi lectus, auctor varius eros malesuada sit amet.
+                {content}
                 </Typography>
             </CardContent>
         </Card>

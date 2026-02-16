@@ -10,52 +10,37 @@ import PostPage from './pages/PostPage';
 import LoginPage from './pages/LoginPage'
 import RegisterPage from './pages/RegisterPage'
 import AuthLayout from './layouts/AuthLayout'
+import ProtectedRoute from './components/ProtectedRoute';
 
 function App() {
 
 
   return (
-    // TODO: Fix routes
+
     <ThemeProvider theme={theme}>
       <CssBaseline />
+
       <BrowserRouter>
         <Routes>
-          <Route element={<MainLayout />}>
-            <Route 
-              path="/" 
-              element={<Homepage />}
-            />
-          </Route>
 
-          <Route element={<MainLayout />}>
-            <Route 
-              path="/create" 
-              element={<CreatePage />}
-            />
-          </Route>
 
-          <Route element={<MainLayout />}>
-            <Route 
-              path="/post" 
-              element={<PostPage />}
-            />
-          </Route>
 
+          {/* Auth pages (NO token required) */}
           <Route element={<AuthLayout />}>
-            <Route 
-              path="/login" 
-              element={<LoginPage />}
-            />
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/register" element={<RegisterPage />} />
           </Route>
 
-          <Route element={<AuthLayout />}>
-            <Route 
-              path="/register" 
-              element={<RegisterPage />}
-            />
+          {/* Protected app pages */}
+          <Route element={<ProtectedRoute />}>
+            <Route element={<MainLayout />}>
+              <Route path="/" element={<Homepage />} />
+              <Route path="/create" element={<CreatePage />} />
+              <Route path="/post/:id" element={<PostPage />} />
+            </Route>
           </Route>
-          
-      </Routes>
+
+        </Routes>
       </BrowserRouter>
     </ThemeProvider>
   )

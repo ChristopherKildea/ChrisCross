@@ -46,13 +46,17 @@ function Homepage() {
           divider={<Divider sx={{ borderColor: "white", width: "100%" }} />}
         >
 
-          <PostPreview />
-          <PostPreview />
-          <PostPreview />
-          <PostPreview />
-          <PostPreview />
-          <PostPreview />
-          
+        {posts.map((post) => (
+      
+          <PostPreview
+            key={post.post_id}
+            user_id={post.user_id}
+            title={post.title}
+            body={post.body}
+            timestamp={post.created_at}
+            post_id={post.post_id}
+          />
+        ))}
         </Stack>
     
 

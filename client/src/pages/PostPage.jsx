@@ -4,21 +4,76 @@ import FavoriteBorderOutlinedIcon from '@mui/icons-material/FavoriteBorderOutlin
 import AddCommentOutlinedIcon from '@mui/icons-material/AddCommentOutlined';
 import PostPreview from "../components/PostPreview";
 import Comment from "../components/Comment";
+import { useState, useEffect } from "react";
+import { useParams } from "react-router-dom";
+import { formatDistanceToNow } from "date-fns";
 
 function PostPage() {
+
+    const { id } = useParams(); 
+    const [post, setPost] = useState(null);
+    const [user, setUser] = useState(null);
+    const [comments, setComments] = useState([]);
+    const [loading, setLoading] = useState(true);
+
+
+    useEffect(() => {
+        const fetchPost = async () => {
+        try {
+            const token = localStorage.getItem("token");
+            const res = await fetch(`${import.meta.env.VITE_API_URL}/post/${id}`, {
+            headers: { Authorization: `${token}` },
+            });
+
+            const postData = await res.json();
+            setPost(postData);
+        
+            const resUser = await fetch(`${import.meta.env.VITE_API_URL}/user/${postData.user_id}`, {
+                headers: { Authorization: `${token}` },
+            });
+            const userData = await resUser.json();
+            setUser(userData);
+
+            const resComment = await fetch(`${import.meta.env.VITE_API_URL}/comment/post/${postData.post_id}`, {
+                headers: { Authorization: `${token}` },
+            });
+            const commentData = await resComment.json();
+            setComments(commentData);
+
+
+        } catch (err) {
+            console.error("Failed to fetch post:", err);
+        } finally {
+          setLoading(false);
+        }
+
+        };
+
+        fetchPost();
+    }, [id]);
+
+
+    const handleComment = async () => {
+        // TODO: Allow the user to comment
+        // Make sure there is text in the comment seciont. If not, give
+        // a warning
+    }
+
+
+    if (loading) return <div style={{ color: "white" }}>Loading posts...</div>;
 
     return (
         <Card sx={{ width: "50vw" }} >
             <CardContent>
                 <Typography variant="body2" color="gray" mb={2}>
-                Chris • 02/13/2026
+                {user.username} • {formatDistanceToNow(new Date(post.created_at), { addSuffix: true })}
                 </Typography>
-                <Typography variant="h4" align='left' mb={2}>Title</Typography>
+                <Typography variant="h4" align='left' mb={2}>{post.title}</Typography>
                 <Typography variant="body2" mb={1}   sx={{
                     wordBreak: "break-word",  
                     overflowWrap: "break-word", 
                 }}> 
-                    aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+                    {post.body}
                 </Typography>
 
 
@@ -68,12 +123,15 @@ function PostPage() {
                 </Stack>
             </CardContent>
             <Stack>
-                <Comment/>
-                <Comment/>
-                <Comment/>
-                <Comment/>
-                <Comment/>
-                <Comment/>
+                {comments.map((comment) => (
+            
+                <Comment
+                    key={comment.comment_id}
+                    user_id={comment.user_id}
+                    content={comment.content}
+                    timestamp={comment.created_at}
+                />
+                ))}
             </Stack>
 
         </Card>

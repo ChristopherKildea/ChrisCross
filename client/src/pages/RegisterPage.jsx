@@ -12,9 +12,25 @@ function RegisterPage() {
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
 
-    const handleRegister = async () => {
-      console.log("Register!")
-    }
+    // TODO - put this in a try-catch
+    const handleRegister = async () => { 
+
+
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/auth/register`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username, password })
+      });
+
+      const data = await res.json();
+
+      if (data.token) {
+        localStorage.setItem("token", data.token);
+        window.location.href = "/";
+      } else {
+        alert("Invalid name");
+      }
+    };
 
     return (
     <Box
