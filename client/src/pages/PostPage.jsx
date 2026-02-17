@@ -17,7 +17,6 @@ import { formatDistanceToNow } from "date-fns";
 function PostPage() {
   const { id } = useParams();
   const [post, setPost] = useState(null);
-  const [user, setUser] = useState(null);
   const [comments, setComments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [comment, setComment] = useState("");
@@ -33,24 +32,9 @@ function PostPage() {
 
         const postData = await res.json();
         setPost(postData);
+        setComments(postData.comments);
 
-        const resUser = await fetch(
-          `${import.meta.env.VITE_API_URL}/user/${postData.user_id}`,
-          {
-            headers: { Authorization: `${token}` },
-          },
-        );
-        const userData = await resUser.json();
-        setUser(userData);
-
-        const resComment = await fetch(
-          `${import.meta.env.VITE_API_URL}/comment/post/${postData.post_id}`,
-          {
-            headers: { Authorization: `${token}` },
-          },
-        );
-        const commentData = await resComment.json();
-        setComments(commentData);
+        console.log(postData);
       } catch (err) {
         console.error("Failed to fetch post:", err);
       } finally {
@@ -100,7 +84,7 @@ function PostPage() {
     <Card sx={{ width: "50vw" }}>
       <CardContent>
         <Typography variant="body2" color="gray" mb={2}>
-          {user.username} •{" "}
+          {post.username} •{" "}
           {formatDistanceToNow(new Date(post.created_at), { addSuffix: true })}
         </Typography>
         <Typography variant="h4" align="left" mb={2}>

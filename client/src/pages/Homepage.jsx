@@ -16,6 +16,7 @@ function Homepage() {
           },
         });
         const data = await res.json();
+        console.log(data);
         setPosts(data);
       } catch (err) {
         console.error("Failed to fetch posts:", err);
@@ -38,11 +39,14 @@ function Homepage() {
       {posts.map((post) => (
         <PostPreview
           key={post.post_id}
-          user_id={post.user_id}
-          title={post.title}
-          body={post.body}
-          timestamp={post.created_at}
-          post_id={post.post_id}
+          post={post}
+          // user_id={post.user_id}
+          // title={post.title}
+          // body={post.body}
+          // timestamp={post.created_at}
+          // post_id={post.post_id}
+          // username={post.username}
+          // comment_count={post.comment_count}
         />
       ))}
     </Stack>
