@@ -9,6 +9,7 @@ import {
 import FavoriteBorderOutlinedIcon from "@mui/icons-material/FavoriteBorderOutlined";
 import AddCommentOutlinedIcon from "@mui/icons-material/AddCommentOutlined";
 import PostPreview from "../components/PostPreview";
+import FavoriteIcon from "@mui/icons-material/Favorite";
 import Comment from "../components/Comment";
 import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
@@ -21,6 +22,8 @@ function PostPage() {
   const [loading, setLoading] = useState(true);
   const [comment, setComment] = useState("");
   const [commentError, setCommentError] = useState("");
+  const [likeCount, setLikeCount] = useState();
+  const [liked, setLiked] = useState();
 
   useEffect(() => {
     const fetchPost = async () => {
@@ -34,7 +37,8 @@ function PostPage() {
         setPost(postData);
         setComments(postData.comments);
 
-        console.log(postData);
+        setLiked(postData.has_liked);
+        setLikeCount(Number(postData.like_count));
       } catch (err) {
         console.error("Failed to fetch post:", err);
       } finally {
@@ -78,6 +82,29 @@ function PostPage() {
     }
   };
 
+  const handleLike = async (e) => {
+    try {
+      const token = localStorage.getItem("token");
+
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/like`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `${token}`,
+        },
+        body: JSON.stringify({
+          post_id: post.post_id,
+        }),
+      });
+
+      const newLike = await res.json();
+      setLiked(newLike.liked);
+      setLikeCount((prev) => (newLike.liked ? prev + 1 : prev - 1));
+    } catch (err) {
+      console.error("Error creating post:", err);
+    }
+  };
+
   if (loading) return <div style={{ color: "white" }}>Loading posts...</div>;
 
   return (
@@ -103,10 +130,17 @@ function PostPage() {
 
         <Stack direction={"row"} align="left" spacing={1} mb={2}>
           <Button
-            startIcon={<FavoriteBorderOutlinedIcon />}
-            sx={{ borderRadius: "15px", textTransform: "none", color: "white" }}
+            onClick={handleLike}
+            startIcon={
+              liked ? <FavoriteIcon /> : <FavoriteBorderOutlinedIcon />
+            }
+            sx={{
+              borderRadius: "15px",
+              textTransform: "none",
+              color: liked ? "#ff3042" : "white",
+            }}
           >
-            123
+            {likeCount}
           </Button>
 
           <Stack

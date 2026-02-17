@@ -47,14 +47,37 @@ router.get("", async (req, res) => {
 router.get("/:id", async (req, res) => {
   try {
     const { id } = req.params;
+    const userId = req.user.id;
 
-    // Get post with username using JOIN
     const postRes = await pool.query(
-      `SELECT posts.*, users.username
-       FROM posts
-       JOIN users ON posts.user_id = users.user_id
-       WHERE posts.post_id = $1`,
-      [id],
+      `
+      SELECT 
+        p.*,
+        u.username,
+
+        -- Like count
+        COUNT(DISTINCT l.like_id) AS like_count,
+
+        -- Has current user liked
+        EXISTS (
+          SELECT 1
+          FROM likes l2
+          WHERE l2.post_id = p.post_id
+          AND l2.user_id = $2
+        ) AS has_liked
+
+      FROM posts p
+      JOIN users u 
+        ON u.user_id = p.user_id
+
+      LEFT JOIN likes l 
+        ON l.post_id = p.post_id
+
+      WHERE p.post_id = $1
+
+      GROUP BY p.post_id, u.username;
+      `,
+      [id, userId],
     );
 
     const post = postRes.rows[0];
@@ -63,27 +86,71 @@ router.get("/:id", async (req, res) => {
       return res.status(404).json({ error: "Post not found" });
     }
 
-    // Get comments
+    // Get comments (unchanged)
     const commentsRes = await pool.query(
-      "SELECT * FROM comments WHERE post_id = $1 ORDER BY created_at DESC",
+      `
+      SELECT *
+      FROM comments
+      WHERE post_id = $1
+      ORDER BY created_at DESC
+      `,
       [id],
     );
+
     const comments = commentsRes.rows;
 
-    // Get likes
-    const likesRes = await pool.query(
-      "SELECT * FROM likes WHERE post_id = $1",
-      [id],
-    );
-    const likes = likesRes.rows;
-
-    // Combine into one object
-    res.json({ ...post, comments, likes });
+    // Combine
+    res.json({
+      ...post,
+      comments,
+    });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: err.message });
   }
 });
+
+// GET a post
+// router.get("/:id", async (req, res) => {
+//   try {
+//     const { id } = req.params;
+
+//     // Get post with username using JOIN
+//     const postRes = await pool.query(
+//       `SELECT posts.*, users.username
+//        FROM posts
+//        JOIN users ON posts.user_id = users.user_id
+//        WHERE posts.post_id = $1`,
+//       [id],
+//     );
+
+//     const post = postRes.rows[0];
+
+//     if (!post) {
+//       return res.status(404).json({ error: "Post not found" });
+//     }
+
+//     // Get comments
+//     const commentsRes = await pool.query(
+//       "SELECT * FROM comments WHERE post_id = $1 ORDER BY created_at DESC",
+//       [id],
+//     );
+//     const comments = commentsRes.rows;
+
+//     // Get likes
+//     const likesRes = await pool.query(
+//       "SELECT * FROM likes WHERE post_id = $1",
+//       [id],
+//     );
+//     const likes = likesRes.rows;
+
+//     // Combine into one object
+//     res.json({ ...post, comments, likes });
+//   } catch (err) {
+//     console.error(err);
+//     res.status(500).json({ error: err.message });
+//   }
+// });
 
 // Make a post
 router.post("", async (req, res) => {
